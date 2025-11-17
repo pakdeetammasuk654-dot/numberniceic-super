@@ -1,25 +1,20 @@
 package handlers
 
 import (
-	"numberniceic/models"
+	"numberniceic/repository"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-type NumberRepository interface {
-	GetAllNumbers() ([]models.Number, error)
-}
-
 type NumberHandler struct {
-	Repo NumberRepository
+	Repo repository.NumberRepository
 }
 
-func NewNumberHandler(repo NumberRepository) *NumberHandler {
+func NewNumberHandler(repo repository.NumberRepository) *NumberHandler {
 	return &NumberHandler{Repo: repo}
 }
 
 func (h *NumberHandler) GetAllNumbers(c *fiber.Ctx) error {
-
 	results, err := h.Repo.GetAllNumbers()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

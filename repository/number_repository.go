@@ -6,15 +6,19 @@ import (
 	"numberniceic/models"
 )
 
-type NumberRepository struct {
+type NumberRepository interface {
+	GetAllNumbers() ([]models.Number, error)
+}
+
+type numberRepository struct {
 	DB *sql.DB
 }
 
-func NewNumberRepository(db *sql.DB) *NumberRepository {
-	return &NumberRepository{DB: db}
+func NewNumberRepository(db *sql.DB) NumberRepository {
+	return &numberRepository{DB: db}
 }
 
-func (r *NumberRepository) GetAllNumbers() ([]models.Number, error) {
+func (r *numberRepository) GetAllNumbers() ([]models.Number, error) {
 	rows, err := r.DB.Query(`
 		SELECT 
 			detail_vip, pairtype, pairnumber, 
