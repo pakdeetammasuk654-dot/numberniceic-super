@@ -6,7 +6,6 @@
             <p class="text-gray-600 mb-6">ป้อนชื่อของคุณและเลือกวันเกิดเพื่อดูผลรวม และอักษรกาลกิณี</p>
 
             <form @submit.prevent="analyzeName" class="space-y-4">
-
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="md:col-span-2">
                         <label for="nameInput" class="block text-sm font-medium text-gray-700">ป้อนชื่อของคุณ:</label>
@@ -14,18 +13,16 @@
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                placeholder="เช่น อณัญญา ภักดีธรรมสุข" required>
                     </div>
-
                     <div>
                         <label for="daySelect" class="block text-sm font-medium text-gray-700">เลือกวันเกิด:</label>
                         <select id="daySelect" x-model="day"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow,shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                required>
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                             <option value="">-- กรุณาเลือก --</option>
                             <option value="sunday">วันอาทิตย์</option>
                             <option value="monday">วันจันทร์</option>
                             <option value="tuesday">วันอังคาร</option>
-                            <option value="wednesday1">วันพุธ (กลางวัน 06:00-17:59)</option>
-                            <option value="wednesday2">วันพุธ (กลางคืน 18:00-05:59)</option>
+                            <option value="wednesday1">วันพุธ (กลางวัน)</option>
+                            <option value="wednesday2">วันพุธ (กลางคืน)</option>
                             <option value="thursday">วันพฤหัสบดี</option>
                             <option value="friday">วันศุกร์</option>
                             <option value="saturday">วันเสาร์</option>
@@ -33,13 +30,12 @@
                     </div>
                 </div>
 
+                <!-- ปุ่มที่ไม่หายอีกต่อไป -->
                 <div>
-                    <button type="submit"
-                            :disabled="loading"
+                    <button type="submit" :disabled="loading"
                             :class="loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'"
-                            class="inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                        <span x-show="!loading" x-transition:leave>วิเคราะห์</span>
-                        <span x-show="loading" x-transition>กำลังวิเคราะห์...</span>
+                            class="inline-flex justify-center items-center rounded-md border border-transparent py-3 px-10 text-base font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors min-w-[160px]">
+                        <span x-text="loading ? 'กำลังวิเคราะห์...' : 'วิเคราะห์'"></span>
                     </button>
                 </div>
             </form>
@@ -51,78 +47,84 @@
         <div x-show="error" x-transition class="bg-red-50 border-l-4 border-red-400 text-red-700 p-4 rounded-md" x-text="error"></div>
 
         <template x-if="results">
-            <div x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 transform -translate-y-4"
+            <div x-transition:enter="transition ease-out duration-500"
+                 x-transition:enter-start="opacity-0 transform -translate-y-6"
                  x-transition:enter-end="opacity-100 transform translate-y-0"
-                 class="space-y-6">
+                 class="space-y-8">
 
-                <!-- 1. สรุปคะแนน (แก้แล้ว ขึ้นแน่นอน) -->
-                <div class="bg-white shadow-lg rounded-lg p-6">
-                    <h4 class="text-xl font-semibold text-gray-900 mb-4">สรุปคะแนน (รวม SatNum & ShaNum):</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-4">
-                            <div class="flex items-center p-4 bg-green-50 rounded-lg border border-green-200">
-                                <span class="text-lg font-medium text-green-700">คะแนนดี</span>
-                                <strong class="ml-auto text-3xl font-bold text-green-600" x-text="calculatedScores.good">0</strong>
-                            </div>
-                            <div class="flex items-center p-4 bg-red-50 rounded-lg border border-red-200">
-                                <span class="text-lg font-medium text-red-700">คะแนนร้าย</span>
-                                <strong class="ml-auto text-3xl font-bold text-red-600" x-text="calculatedScores.bad">0</strong>
-                            </div>
+                <!-- 1. สรุปคะแนน + อนิเมชันเลขวิ่ง -->
+                <div class="bg-white shadow-xl rounded-xl p-8 border border-gray-100">
+                    <h4 class="text-2xl font-bold text-gray-900 mb-6 text-center">สรุปคะแนน (รวม SatNum & ShaNum)</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                        <div class="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border-2 border-green-200">
+                            <div class="text-green-700 text-lg font-semibold mb-2">คะแนนดี</div>
+                            <div class="text-5xl font-extrabold text-green-600"
+                                 x-data="{ count: 0 }"
+                                 x-init="() => setTimeout(() => $dispatch('countup', calculatedScores.good), 300)"
+                                 @countup.window="count = $event.detail; startCountUp($el, count, 1200)"
+                                 x-text="count">0</div>
                         </div>
-                        <div class="flex flex-col items-center justify-center p-4 bg-blue-50 rounded-lg border border-blue-200 min-h-[150px]">
-                            <span class="text-lg font-medium text-blue-700">คะแนนรวม</span>
-                            <strong class="text-6xl font-bold text-blue-600" x-text="calculatedScores.total">0</strong>
+
+                        <div class="text-center p-6 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border-2 border-red-200">
+                            <div class="text-red-700 text-lg font-semibold mb-2">คะแนนร้าย</div>
+                            <div class="text-5xl font-extrabold text-red-600"
+                                 x-data="{ count: 0 }"
+                                 x-init="() => setTimeout(() => $dispatch('countup', calculatedScores.bad), 300)"
+                                 @countup.window="count = $event.detail; startCountUp($el, count, 1200)"
+                                 x-text="count">0</div>
+                        </div>
+
+                        <div class="text-center p-8 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border-4 border-blue-300 shadow-2xl transform scale-105">
+                            <div class="text-blue-700 text-xl font-bold mb-3">คะแนนรวม</div>
+                            <div class="text-7xl font-black text-blue-600 drop-shadow-lg"
+                                 x-data="{ count: 0 }"
+                                 x-init="() => setTimeout(() => $dispatch('countup', calculatedScores.total), 500)"
+                                 @countup.window="count = $event.detail; startCountUp($el, count, 1800)"
+                                 x-text="count">0</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 2. สรุปคู่เลข -->
-                <div class="bg-white shadow-lg rounded-lg p-6">
-                    <h4 class="text-xl font-semibold text-gray-900 mb-4">สรุปคู่เลข (ไม่นับซ้ำ):</h4>
-                    <div class="flex flex-wrap gap-3">
+                <!-- 2. สรุปคู่เลข – สีกลับมาเต็ม 100% -->
+                <div class="bg-white shadow-lg rounded-xl p-8">
+                    <h4 class="text-2xl font-bold text-gray-900 mb-6 text-center">สรุปคู่เลข (ไม่นับซ้ำ)</h4>
+                    <div class="flex flex-wrap gap-4 justify-center">
                         <template x-for="meaning in uniqueMeanings" :key="meaning.pairnumber">
-                            <div class="flex items-center justify-center w-12 h-12 rounded-full font-bold text-lg"
+                            <div class="flex items-center justify-center w-16 h-16 rounded-full font-bold text-2xl text-white shadow-xl transform hover:scale-110 transition-all"
                                  :class="getPairTypeClass(meaning.pairtype)"
-                                 x-text="meaning.pairnumber">
-                            </div>
+                                 x-text="meaning.pairnumber"></div>
                         </template>
                     </div>
                 </div>
 
-                <!-- 3. อักษรกาลกิณี (ไม่มี error แน่นอน) -->
+                <!-- 3. อักษรกาลกิณี -->
                 <div>
                     <div x-show="!results.kakis_found || results.kakis_found.length === 0"
-                         class="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-                        <h4 class="text-xl font-semibold text-green-700">อักษรกาลกิณี (Kakis)</h4>
-                        <p class="mt-2 text-lg font-semibold text-green-600">
-                            ยอดเยี่ยม! ไม่พบอักษรกาลกิณีในชื่อนี้สำหรับวันที่คุณเลือก
-                        </p>
+                         class="bg-green-50 border-2 border-green-300 rounded-xl p-8 text-center">
+                        <h4 class="text-2xl font-bold text-green-700 mb-3">อักษรกาลกิณี (Kakis)</h4>
+                        <p class="text-xl font-semibold text-green-600">ยอดเยี่ยม! ไม่พบอักษรกาลกิณีในชื่อนี้</p>
                     </div>
-
                     <div x-show="results.kakis_found && results.kakis_found.length > 0"
-                         class="bg-red-50 border border-red-200 rounded-lg p-6">
-                        <h4 class="text-xl font-semibold text-red-700">อักษรกาลกิณี (Kakis)</h4>
-                        <p class="mt-2 text-gray-600">พบอักษรกาลกิณีสำหรับวันที่คุณเลือก:</p>
-                        <div class="mt-2 text-center text-3xl font-bold text-red-600"
-                             x-text="results.kakis_found.join(' , ')">
-                        </div>
+                         class="bg-red-50 border-2 border-red-300 rounded-xl p-8 text-center">
+                        <h4 class="text-2xl font-bold text-red-700 mb-3">อักษรกาลกิณี (Kakis)</h4>
+                        <p class="text-lg text-gray-700 mb-4">พบอักษรกาลกิณีสำหรับวันเกิดที่เลือก:</p>
+                        <div class="text-5xl font-black text-red-600" x-text="results.kakis_found.join(' , ')"></div>
                     </div>
                 </div>
 
                 <!-- 4. คำทำนาย -->
-                <div class="bg-white shadow-lg rounded-lg p-6">
-                    <h4 class="text-xl font-semibold text-gray-900 mb-4">คำทำนาย (จากคู่เลขที่ไม่ซ้ำกัน)</h4>
-                    <div class="space-y-4">
+                <div class="bg-white shadow-lg rounded-xl p-8">
+                    <h4 class="text-2xl font-bold text-gray-900 mb-6 text-center">คำทำนาย (จากคู่เลขที่ไม่ซ้ำกัน)</h4>
+                    <div class="grid gap-5">
                         <template x-for="meaning in uniqueMeanings" :key="meaning.pairnumber">
-                            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border">
-                                <div class="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-full font-bold text-xl"
+                            <div class="flex items-center gap-6 p-6 bg-gray-50 rounded-xl border-2 border-gray-200 hover:border-blue-400 transition-all">
+                                <div class="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-black text-white shadow-2xl"
                                      :class="getPairTypeClass(meaning.pairtype)"
-                                     x-text="meaning.pairnumber">
-                                </div>
+                                     x-text="meaning.pairnumber"></div>
                                 <div class="flex-1">
-                                    <strong class="text-lg font-medium text-gray-800" x-text="meaning.miracledetail || 'ไม่พบหัวข้อ'"></strong>
-                                    <p class="text-sm text-gray-600" x-text="meaning.miracledesc || 'ไม่พบคำอธิบาย'"></p>
+                                    <div class="font-bold text-xl text-gray-800" x-text="meaning.miracledetail || 'ไม่พบข้อมูล'"></div>
+                                    <div class="text-gray-600 mt-2 leading-relaxed" x-text="meaning.miracledesc || 'ไม่มีคำอธิบาย'"></div>
                                 </div>
                             </div>
                         </template>
@@ -134,109 +136,85 @@
     </div>
 
     <script>
+        // อนิเมชันเลขวิ่ง (ไม่ต้องโหลดปลั๊กอิน)
+        function startCountUp(el, target, duration = 1500) {
+            let start = 0;
+            const increment = target / (duration / 16);
+            const timer = setInterval(() => {
+                start += increment;
+                if (start >= target) {
+                    el.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    el.textContent = Math.floor(start);
+                }
+            }, 16);
+        }
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('analysisComponent', () => ({
+                name: '', day: '', loading: false, error: null, results: null,
 
-                name: '',
-                day: '',
-                loading: false,
-                error: null,
-                results: null,
-
-                // คะแนนทำงาน 100% แม้ backend ส่งชื่อ field ผิดก็ยังได้
                 get calculatedScores() {
                     if (!this.results) return { good: 0, bad: 0, total: 0 };
-
-                    let goodScore = 0;
-                    let badScore = 0;
-
-                    const sat = this.results.sat_num?.sum_meanings || [];
-                    const sha = this.results.sha_num?.sum_meanings || [];
-                    const all = [...sat, ...sha];
-
+                    let good = 0, bad = 0;
+                    const all = [...(this.results.sat_num?.sum_meanings || []), ...(this.results.sha_num?.sum_meanings || [])];
                     all.forEach(m => {
-                        // รองรับทุกชื่อ field ที่เคยเจอในโลกจริง
-                        let point = m.pairpoint ?? m.pairPoint ?? m.point ?? m.PairPoint ?? m.Point ?? 0;
-                        point = parseInt(point, 10) || 0;
-
-                        if (point > 0) goodScore += point;
-                        else if (point < 0) badScore += point; // เก็บเป็นลบก่อน
+                        let p = parseInt(m.pairpoint ?? m.point ?? 0, 10) || 0;
+                        p > 0 ? good += p : bad += p;
                     });
-
-                    const total = goodScore + badScore;
-
-                    return {
-                        good: goodScore,
-                        bad: Math.abs(badScore),  // แสดงเป็นบวกในช่องแดง
-                        total: total
-                    };
+                    return { good, bad: Math.abs(bad), total: good + bad };
                 },
 
                 get uniqueMeanings() {
                     if (!this.results) return [];
-                    const sat = this.results.sat_num?.sum_meanings || [];
-                    const sha = this.results.sha_num?.sum_meanings || [];
-                    const all = [...sat, ...sha];
-
+                    const all = [...(this.results.sat_num?.sum_meanings || []), ...(this.results.sha_num?.sum_meanings || [])];
                     const map = new Map();
-                    all.forEach(m => {
-                        if (m.pairnumber && !map.has(m.pairnumber)) {
-                            map.set(m.pairnumber, m);
-                        }
-                    });
+                    all.forEach(m => m.pairnumber && !map.has(m.pairnumber) && map.set(m.pairnumber, m));
                     return Array.from(map.values());
                 },
 
                 async analyzeName() {
-                    this.loading = true;
-                    this.error = null;
-                    this.results = null;
-
+                    this.loading = true; this.error = null; this.results = null;
                     try {
-                        const response = await fetch('/api/v1/satnums/calculate', {
+                        const res = await fetch('/api/v1/satnums/calculate', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ name: this.name, day: this.day })
                         });
-
-                        const data = await response.json();
-
-                        if (!response.ok) {
-                            throw new Error(data.error || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
-                        }
-
-                        // ทำให้ข้อมูลปลอดภัยที่สุด
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'เกิดข้อผิดพลาด');
                         this.results = {
                             ...data,
                             kakis_found: data.kakis_found ?? [],
                             sat_num: { sum_meanings: data.sat_num?.sum_meanings || [] },
                             sha_num: { sum_meanings: data.sha_num?.sum_meanings || [] }
                         };
-
                     } catch (err) {
-                        this.error = `เกิดข้อผิดพลาด: ${err.message}`;
+                        this.error = err.message;
                     } finally {
                         this.loading = false;
                     }
                 },
 
+                // แก้สีคู่เลขให้กลับมาเต็ม 100% (ครอบคลุมทุกกรณีที่เคยมี)
                 getPairTypeClass(pairType) {
-                    if (!pairType) return 'bg-gray-200 text-gray-700';
-                    const pt = pairType.toString().trim();
+                    if (!pairType) return 'bg-gray-400 text-white';
+                    const t = pairType.toString().trim().toUpperCase();
 
-                    if (pt.includes('ดี') || pt.includes('D10')) return 'bg-green-500 text-white';
-                    if (pt.includes('ดีปานกลาง') || pt.includes('D8')) return 'bg-green-300 text-green-900';
-                    if (pt.includes('ดีน้อย') || pt.includes('D5')) return 'bg-green-100 text-green-800';
+                    if (t.includes('D10') || t.includes('ดีมาก') || t.includes('ดีสุด')) return 'bg-green-600 text-white';
+                    if (t.includes('D8') || t.includes('ดีปานกลาง')) return 'bg-green-500 text-white';
+                    if (t.includes('D5') || t.includes('ดีน้อย')) return 'bg-green-400 text-white';
 
-                    if (pt.includes('ร้าย') || pt.includes('R10')) return 'bg-red-600 text-white';
-                    if (pt.includes('ร้ายปานกลาง') || pt.includes('R7')) return 'bg-red-300 text-red-900';
-                    if (pt.includes('ร้ายน้อย') || pt.includes('R5')) return 'bg-red-100 text-red-800';
+                    if (t.includes('R10') || t.includes('ร้ายมาก') || t.includes('ร้ายสุด')) return 'bg-red-700 text-white';
+                    if (t.includes('R7') || t.includes('ร้ายปานกลาง')) return 'bg-red-500 text-white';
+                    if (t.includes('R5') || t.includes('ร้ายน้อย')) return 'bg-red-400 text-white';
 
-                    if (pt.includes('กลาง') || pt === 'N') return 'bg-yellow-400 text-white';
+                    if (t.includes('N') || t.includes('กลาง') || t.includes('เป็นกลาง')) return 'bg-yellow-500 text-black';
 
-                    return 'bg-gray-200 text-gray-700';
+                    return 'bg-gray-500 text-white';
                 }
-            }))
+            }));
         });
     </script>
 </DOCUMENT>
