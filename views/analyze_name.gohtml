@@ -1,0 +1,64 @@
+<style>
+    .analyze-container {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #34495e;
+    }
+    .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1em;
+        box-sizing: border-box; /* 👈 Wdth 100% จะได้รวม Padding */
+    }
+    .btn {
+        background-color: #3498db;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .btn:hover {
+        background-color: #2980b9;
+    }
+
+    /* ส่วนแสดงผลลัพธ์ (จะใช้ในอนาคต) */
+    #result-container {
+        margin-top: 30px;
+        border-top: 2px dashed #eee;
+        padding-top: 20px;
+    }
+</style>
+
+<div class="analyze-container">
+    <h2>วิเคราะห์ชื่อตามหลักเลขศาสตร์</h2>
+    <p>ป้อนชื่อของคุณเพื่อดูผลรวม และอักษรที่ส่งผลตามหลักเลขศาสตร์</p>
+
+    <form id="analyze-form">
+        <div class="form-group">
+            <label for="nameInput">ป้อนชื่อของคุณ:</label>
+            <input type="text" id="nameInput" placeholder="เช่น สมชาย, แสงสว่าง...">
+        </div>
+
+        <button type="submit" class="btn">วิเคราะห์</button>
+    </form>
+
+    <div id="result-container">
+        <h3>ผลลัพธ์:</h3>
+        <pre id="result-json"></pre>
+    </div>
+</div>
