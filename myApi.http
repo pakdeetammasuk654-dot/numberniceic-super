@@ -5,3 +5,38 @@ Accept: application/json
 
 GET http://localhost:8000/api/v1/numbers/12
 Accept: application/json
+
+### ------------------
+### SatNum Calculations
+### ------------------
+
+# คำนวณเลขศาสตร์จากชื่อ
+POST http://localhost:8000/api/v1/satnums/calculate
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "อณัญญา"
+}
+
+###
+
+# ทดสอบกรณีส่งชื่ออื่น
+POST http://localhost:8000/api/v1/satnums/calculate
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "แสงสว่าง"
+}
+
+###
+
+# ทดสอบกรณีส่งค่าว่าง (ควรจะ Error)
+POST http://localhost:8000/api/v1/satnums/calculate
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": ""
+}

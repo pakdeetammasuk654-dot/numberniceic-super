@@ -43,6 +43,7 @@ func SetupRoutes(app *fiber.App, db *sql.DB) {
 	// --- 🚀 [ใหม่] SatNum route ---
 	// 4. เพิ่ม Route ใหม่
 	v1.Get("/satnums", satNumHandler.GetAllSatNums)
+	v1.Post("/satnums/calculate", satNumHandler.CalculateAstrology)
 	// --- จบส่วนใหม่ ---
 
 	// --- Page Route (ของเดิม) ---

@@ -35,6 +35,7 @@
         text-align: center;
     }
     .method-get { background-color: #27ae60; }
+    .method-post { background-color: #2980b9; }
 </style>
 
 <div class="container">
@@ -60,6 +61,14 @@
         <span class="route-path">/api/v1/satnums</span>
         <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
         <strong>หน้าที่:</strong> ดึงข้อมูลเลขศาสตร์ (SatNums) ทั้งหมด
+    </div>
+
+    <div class="route">
+        <span class="method method-post">POST</span> <span class="route-path">/api/v1/satnums/calculate</span>
+        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
+        <strong>หน้าที่:</strong> คำนวณผลรวมเลขศาสตร์จากชื่อ
+        <br>
+        <strong>Body (JSON):</strong> <code>{ "name": "ชื่อของคุณ" }</code>
     </div>
 
 </div>
