@@ -1,7 +1,7 @@
 package services
 
 import (
-	"fmt" // 👈 [ใหม่]
+	"fmt"
 	"log"
 	"numberniceic/models"
 	"numberniceic/repository"
@@ -14,52 +14,47 @@ type AnalysisService interface {
 	CalculateNameAstrology(name string, day string) (models.AnalysisResult, error)
 }
 
-// 🚀 [อัปเดต] Struct
+// Struct (เหมือนเดิม)
 type analysisService struct {
 	satRepo   repository.SatNumRepository
 	shaRepo   repository.ShaNumRepository
 	kakisRepo repository.KakisDayRepository
-	numRepo   repository.NumberRepository // 👈 [ใหม่]
+	numRepo   repository.NumberRepository
 }
 
-// 🚀 [อัปเดต] New Service
+// New Service (เหมือนเดิม)
 func NewAnalysisService(
 	satRepo repository.SatNumRepository,
 	shaRepo repository.ShaNumRepository,
 	kakisRepo repository.KakisDayRepository,
-	numRepo repository.NumberRepository, // 👈 [ใหม่]
+	numRepo repository.NumberRepository,
 ) AnalysisService {
 	return &analysisService{
 		satRepo:   satRepo,
 		shaRepo:   shaRepo,
 		kakisRepo: kakisRepo,
-		numRepo:   numRepo, // 👈 [ใหม่]
+		numRepo:   numRepo,
 	}
 }
 
-// 🚀 [ใหม่] ฟังก์ชัน Helper สำหรับแปลงผลรวมเป็นความหมาย
+// getMeaningsForSum (Helper) (เหมือนเดิม)
 func (s *analysisService) getMeaningsForSum(sum int) []models.Number {
 	var pairStrings []string
 
 	if sum < 10 {
-		// 1. กฎหลักหน่วย (เช่น 8 -> "08")
 		pairStrings = append(pairStrings, fmt.Sprintf("0%d", sum))
 	} else if sum > 99 {
-		// 2. กฎหลักร้อย (เช่น 100 -> "10", "00" | 123 -> "12", "23")
-		sumStr := fmt.Sprintf("%d", sum)                          // เช่น "123"
-		pairStrings = append(pairStrings, sumStr[0:2])            // "12"
-		pairStrings = append(pairStrings, sumStr[len(sumStr)-2:]) // "23"
+		sumStr := fmt.Sprintf("%d", sum)
+		pairStrings = append(pairStrings, sumStr[0:2])
+		pairStrings = append(pairStrings, sumStr[len(sumStr)-2:])
 	} else {
-		// 3. กฎหลักสิบ (เช่น 45 -> "45")
 		pairStrings = append(pairStrings, fmt.Sprintf("%d", sum))
 	}
 
-	// 4. ดึงความหมายจาก DB
 	var meanings []models.Number
 	for _, pair := range pairStrings {
 		numberMeaning, err := s.numRepo.GetByPairNumber(pair)
 		if err != nil {
-			// ถ้าหาไม่เจอ ก็แค่ Log ไว้
 			log.Printf("Warning: No meaning found for pairnumber %s: %v", pair, err)
 			continue
 		}
@@ -68,12 +63,50 @@ func (s *analysisService) getMeaningsForSum(sum int) []models.Number {
 	return meanings
 }
 
+// 🚀 [ใหม่] ฟังก์ชัน Helper สำหรับคำนวณคะแนนรวม
+// (ย้าย Logic มาจาก analyze_name.gohtml)
+func (s *analysisService) calculateCombinedScores(satMeanings []models.Number, shaMeanings []models.Number) models.ScoreSummary {
+	var goodScore int = 0
+	var badScore int = 0 // เก็บเป็นค่าลบสะสม
+
+	// 1. รวม Array 2 ชุด
+	allMeanings := append(satMeanings, shaMeanings...)
+
+	// 2. วนลูปเพื่อรวมคะแนน (ใช้ pairpoint)
+	for _, m := range allMeanings {
+		var p int = 0
+		if m.PairPoint != nil {
+			p = int(*m.PairPoint)
+		}
+
+		if p > 0 {
+			goodScore += p
+		} else if p < 0 {
+			badScore += p // บวกค่าลบ
+		}
+	}
+
+	// 3. ทำให้คะแนนร้ายเป็นบวก (Math.abs)
+	var absBadScore int = badScore
+	if absBadScore < 0 {
+		absBadScore = -absBadScore
+	}
+
+	// 4. คืนค่า Struct ใหม่
+	return models.ScoreSummary{
+		GoodScore:  goodScore,
+		BadScore:   absBadScore,
+		TotalScore: goodScore + badScore, // (คะแนนดี + คะแนนร้าย(ที่เป็นค่าลบ)) = ผลรวมสุทธิ
+	}
+}
+
 // 🚀 [อัปเดต] Logic การคำนวณ (CalculateNameAstrology)
 func (s *analysisService) CalculateNameAstrology(name string, day string) (models.AnalysisResult, error) {
 
 	// --- 1. ดึงข้อมูล (SatNum) --- (เหมือนเดิม)
 	allSatNums, err := s.satRepo.GetAllSatNums()
-	if err != nil { /* ... */
+	if err != nil {
+		return models.AnalysisResult{}, err
 	}
 	satMap := make(map[string]int)
 	for _, satNum := range allSatNums {
@@ -85,7 +118,8 @@ func (s *analysisService) CalculateNameAstrology(name string, day string) (model
 
 	// --- 2. ดึงข้อมูล (ShaNum) --- (เหมือนเดิม)
 	allShaNums, err := s.shaRepo.GetAllShaNums()
-	if err != nil { /* ... */
+	if err != nil {
+		return models.AnalysisResult{}, err
 	}
 	shaMap := make(map[string]int)
 	for _, shaNum := range allShaNums {
@@ -96,7 +130,8 @@ func (s *analysisService) CalculateNameAstrology(name string, day string) (model
 
 	// --- 3. ดึงข้อมูล (Kakis) --- (เหมือนเดิม)
 	kakisChars, err := s.kakisRepo.GetKakisByDay(day)
-	if err != nil { /* ... */
+	if err != nil {
+		return models.AnalysisResult{}, err
 	}
 	kakisMap := make(map[string]bool)
 	for _, char := range kakisChars {
@@ -113,37 +148,53 @@ func (s *analysisService) CalculateNameAstrology(name string, day string) (model
 	// --- 5. วนลูป "ชื่อ" (เหมือนเดิม) ---
 	for _, charRune := range name {
 		charStr := string(charRune)
-		if val, ok := satMap[charStr]; ok { /* ... */
+		if val, ok := satMap[charStr]; ok {
 			satTotalSum += val
 			satMatchedChars = append(satMatchedChars, models.MatchedChar{Character: charStr, Value: val})
 		}
-		if val, ok := shaMap[charStr]; ok { /* ... */
+		if val, ok := shaMap[charStr]; ok {
 			shaTotalSum += val
 			shaMatchedChars = append(shaMatchedChars, models.MatchedChar{Character: charStr, Value: val})
 		}
 		if _, ok := kakisMap[charStr]; ok {
-			kakisFound = append(kakisFound, charStr)
+			// (ตรวจสอบว่ายังไม่มีอักษรนี้)
+			found := false
+			for _, k := range kakisFound {
+				if k == charStr {
+					found = true
+					break
+				}
+			}
+			if !found {
+				kakisFound = append(kakisFound, charStr)
+			}
 		}
 	}
 
 	// --- 6. 🚀 [อัปเดต] สร้างผลลัพธ์สุดท้าย ---
 
-	// 👈 [ใหม่] เรียก Helper เพื่อหาความหมาย
+	// (เหมือนเดิม) เรียก Helper เพื่อหาความหมาย
 	satMeanings := s.getMeaningsForSum(satTotalSum)
 	shaMeanings := s.getMeaningsForSum(shaTotalSum)
+
+	// 🚀 [ใหม่] เรียกใช้ Helper เพื่อคำนวณคะแนน
+	combinedScores := s.calculateCombinedScores(satMeanings, shaMeanings)
 
 	result := models.AnalysisResult{
 		SatNum: models.AstrologySet{
 			MatchedChars: satMatchedChars,
 			TotalSum:     satTotalSum,
-			SumMeanings:  satMeanings, // 👈 [ใหม่]
+			SumMeanings:  satMeanings,
 		},
 		ShaNum: models.AstrologySet{
 			MatchedChars: shaMatchedChars,
 			TotalSum:     shaTotalSum,
-			SumMeanings:  shaMeanings, // 👈 [ใหม่]
+			SumMeanings:  shaMeanings,
 		},
 		KakisFound: kakisFound,
+
+		// 🚀 [ใหม่] เพิ่ม field นี้เข้าไปในผลลัพธ์
+		CombinedScoreSummary: combinedScores,
 	}
 
 	return result, nil
