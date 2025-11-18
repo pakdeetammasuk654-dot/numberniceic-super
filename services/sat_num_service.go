@@ -7,32 +7,65 @@ import (
 	"strconv"
 )
 
-// SatNumService defines the interface for the sat_num service.
+// SatNumService (Interface) (เหมือนเดิม)
 type SatNumService interface {
 	GetAllSatNums() ([]models.SatNum, error)
-	CalculateNameAstrology(name string) (models.CalculationResult, error)
+	CalculateNameAstrology(name string) (models.AnalysisResult, error)
 }
 
+// Struct (เหมือนเดิม)
 type satNumService struct {
-	repo repository.SatNumRepository
+	satRepo repository.SatNumRepository
+	shaRepo repository.ShaNumRepository
 }
 
-func (s *satNumService) CalculateNameAstrology(name string) (models.CalculationResult, error) {
-	// 1. ดึงข้อมูลเลขศาสตร์ทั้งหมดจาก DB
-	allSatNums, err := s.repo.GetAllSatNums()
-	if err != nil {
-		return models.CalculationResult{}, err
+// New Service (เหมือนเดิม)
+func NewSatNumService(satRepo repository.SatNumRepository, shaRepo repository.ShaNumRepository) SatNumService {
+	return &satNumService{
+		satRepo: satRepo,
+		shaRepo: shaRepo,
 	}
+}
 
-	// 2. สร้าง "Map" เพื่อให้ค้นหาอักษรได้เร็ว
-	// (แปลงจาก []models.SatNum เป็น map[string]int)
+// 🚀 --- [เราจะแก้ไขฟังก์ชันนี้] --- 🚀
+func (s *satNumService) CalculateNameAstrology(name string) (models.AnalysisResult, error) {
+
+	// ---------------------------------------------------------------
+	// 🚀 [เพิ่มส่วนนี้เพื่อ TEST] เราจะบังคับให้ Return ค่า Test
+	//    เพื่อดูว่า "ั" ที่ถูกต้อง จะแสดงผลเพี้ยนหรือไม่
+	// ---------------------------------------------------------------
+	if name == "TestEncoding" { // 👈 [1] ลองพิมพ์ "TestEncoding" ในหน้าเว็บ
+		log.Println("--- DEBUG: Bypassing database for Encoding Test ---")
+
+		testResult := models.AnalysisResult{
+			SatNum: models.AstrologySet{
+				MatchedChars: []models.MatchedChar{
+					{Character: "อ", Value: 1},
+					{Character: "ั", Value: 4}, // 👈 [2] เรา Hardcode "ั" ที่นี่
+					{Character: "ญ", Value: 5},
+				},
+				TotalSum: 10,
+			},
+			ShaNum: models.AstrologySet{ // 👈 (พลังเงา ก็ส่งค่าเปล่าๆไปก่อน)
+				MatchedChars: []models.MatchedChar{},
+				TotalSum:     0,
+			},
+		}
+		return testResult, nil // 👈 [3] ส่งค่า Test กลับไปเลย
+	}
+	// --- จบส่วน TEST ---
+	// (ถ้าพิมพ์ชื่ออื่นที่ไม่ใช่ "TestEncoding" มันจะทำงานตามปกติ)
+
+	// --- 1. ดึงข้อมูล (SatNum) --- (โค้ดเดิม)
+	allSatNums, err := s.satRepo.GetAllSatNums()
+	if err != nil {
+		return models.AnalysisResult{}, err
+	}
 	satMap := make(map[string]int)
 	for _, satNum := range allSatNums {
 		if satNum.CharKey != nil && satNum.SatValue != nil {
-			// 3. แปลงค่า SatValue (string) เป็น (int)
 			val, err := strconv.Atoi(*satNum.SatValue)
 			if err != nil {
-				// ถ้าแปลงไม่ได้ ให้ข้ามไป (หรือ Log error ไว้)
 				log.Printf("Warning: Skipping invalid SatValue for key %s: %v", *satNum.CharKey, err)
 				continue
 			}
@@ -40,49 +73,65 @@ func (s *satNumService) CalculateNameAstrology(name string) (models.CalculationR
 		}
 	}
 
-	// 4. เตรียมตัวแปรสำหรับผลลัพธ์
-	var totalSum int = 0
-	var matchedChars []models.MatchedChar
+	// --- 2. ดึงข้อมูล (ShaNum) --- (โค้ดเดิม)
+	allShaNums, err := s.shaRepo.GetAllShaNums()
+	if err != nil {
+		return models.AnalysisResult{}, err
+	}
+	shaMap := make(map[string]int)
+	for _, shaNum := range allShaNums {
+		if shaNum.CharKey != nil && shaNum.ShaValue != nil {
+			shaMap[*shaNum.CharKey] = int(*shaNum.ShaValue)
+		}
+	}
 
-	// 5. วนลูป "ชื่อ" ที่ส่งเข้ามา ทีละ "อักษร"
-	// (การวนลูปแบบนี้รองรับภาษาไทยได้ถูกต้อง)
+	// --- 3. เตรียมตัวแปร --- (โค้ดเดิม)
+	var satTotalSum int = 0
+	var satMatchedChars []models.MatchedChar
+	var shaTotalSum int = 0
+	var shaMatchedChars []models.MatchedChar
+
+	// --- 4. วนลูป "ชื่อ" --- (โค้dเดิม)
 	for _, charRune := range name {
 		charStr := string(charRune)
 
-		// 6. ค้นหาอักษรใน Map ที่เราเตรียมไว้
-		// val คือค่าตัวเลข, ok คือ bool (ว่าเจอหรือไม่)
 		if val, ok := satMap[charStr]; ok {
-			// ถ้าเจอ (ok == true)
-			totalSum += val // เพิ่มค่าในผลรวม
-			matchedChars = append(matchedChars, models.MatchedChar{
+			satTotalSum += val
+			satMatchedChars = append(satMatchedChars, models.MatchedChar{
 				Character: charStr,
 				Value:     val,
 			})
 		}
-		// ถ้าไม่เจอ ก็แค่ข้ามไป ไม่ต้องทำอะไร
+		if val, ok := shaMap[charStr]; ok {
+			shaTotalSum += val
+			shaMatchedChars = append(shaMatchedChars, models.MatchedChar{
+				Character: charStr,
+				Value:     val,
+			})
+		}
 	}
 
-	// 7. สร้างผลลัพธ์สุดท้าย
-	result := models.CalculationResult{
-		MatchedChars: matchedChars,
-		TotalSum:     totalSum,
+	// --- 5. สร้างผลลัพธ์สุดท้าย --- (โค้ดเดิม)
+	result := models.AnalysisResult{
+		SatNum: models.AstrologySet{
+			MatchedChars: satMatchedChars,
+			TotalSum:     satTotalSum,
+		},
+		ShaNum: models.AstrologySet{
+			MatchedChars: shaMatchedChars,
+			TotalSum:     shaTotalSum,
+		},
 	}
 
 	return result, nil
 }
 
-// NewSatNumService creates a new SatNumService.
-func NewSatNumService(repo repository.SatNumRepository) SatNumService {
-	return &satNumService{repo: repo}
-}
-
-// GetAllSatNums retrieves all sat_num records.
+// GetAllSatNums (เหมือนเดิม)
 func (s *satNumService) GetAllSatNums() ([]models.SatNum, error) {
-	// ในอนาคต เราสามารถเพิ่ม business logic ตรงนี้ได้
-	// แต่ตอนนี้ เราจะแค่ส่งต่อไปให้ repository
-	satNums, err := s.repo.GetAllSatNums()
+	// ... (โค้ดเดิม) ...
+	satNums, err := s.satRepo.GetAllSatNums()
 	if err != nil {
-		return nil, err // ส่ง error กลับขึ้นไป
+		return nil, err
 	}
 	return satNums, nil
 }

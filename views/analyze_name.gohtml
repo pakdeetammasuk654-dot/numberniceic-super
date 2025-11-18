@@ -20,7 +20,7 @@
         border: 1px solid #ddd;
         border-radius: 4px;
         font-size: 1em;
-        box-sizing: border-box; /* 👈 Wdth 100% จะได้รวม Padding */
+        box-sizing: border-box;
     }
     .btn {
         background-color: #3498db;
@@ -35,30 +35,156 @@
     .btn:hover {
         background-color: #2980b9;
     }
-
-    /* ส่วนแสดงผลลัพธ์ (จะใช้ในอนาคต) */
     #result-container {
         margin-top: 30px;
         border-top: 2px dashed #eee;
         padding-top: 20px;
     }
+    .result-wrapper {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    @media (min-width: 768px) {
+        .result-wrapper {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    .result-box {
+        background-color: #f9f9f9;
+        border: 1px solid #eee;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    .result-box h4 {
+        margin-top: 0;
+        color: #3498db;
+    }
+    .result-box ul {
+        padding-left: 20px;
+        margin-bottom: 0;
+    }
+    .result-box .total {
+        margin-top: 15px;
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #2c3e50;
+        border-top: 1px solid #ddd;
+        padding-top: 10px;
+    }
+    #result-message.error {
+        color: #e74c3c;
+        font-weight: bold;
+    }
+    #result-message.loading {
+        color: #95a5a6;
+    }
 </style>
 
+
 <div class="analyze-container">
-    <h2>วิเคราะห์ชื่อตามหลักเลขศาสตร์</h2>
-    <p>ป้อนชื่อของคุณเพื่อดูผลรวม และอักษรที่ส่งผลตามหลักเลขศาสตร์</p>
+    <h2>วิเคราะห์ชื่อตามหลักเลขศาสตร์และพลังเงา</h2>
+    <p>ป้อนชื่อของคุณเพื่อดูผลรวม และอักษรที่ส่งผล</p>
 
     <form id="analyze-form">
         <div class="form-group">
             <label for="nameInput">ป้อนชื่อของคุณ:</label>
-            <input type="text" id="nameInput" placeholder="เช่น สมชาย, แสงสว่าง...">
+            <input type="text" id="nameInput" placeholder="เช่น สมชาย, แสงสว่าง..." required>
         </div>
-
         <button type="submit" class="btn">วิเคราะห์</button>
     </form>
 
     <div id="result-container">
         <h3>ผลลัพธ์:</h3>
-        <pre id="result-json"></pre>
+        <p id="result-message"></p>
+        <div class="result-wrapper" id="result-output">
+        </div>
     </div>
 </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // ... (ส่วน
+        const analyzeForm = document.getElementById('analyze-form');
+        const nameInput = document.getElementById('nameInput');
+        const resultMessage = document.getElementById('result-message');
+        const resultOutput = document.getElementById('result-output');
+
+        // ... (ส่วน analyzeForm.addEventListener ... fetch ... .then(data => ... )
+        analyzeForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const nameToAnalyze = nameInput.value;
+
+            resultMessage.classList.remove('error');
+            resultMessage.classList.add('loading');
+            resultMessage.textContent = 'กำลังวิเคราะห์...';
+            resultOutput.innerHTML = '';
+
+            fetch('/api/v1/satnums/calculate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ name: nameToAnalyze })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errData => {
+                            throw new Error(errData.error || 'เกิดข้อผิดพลาดจาก Server');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    resultMessage.textContent = '';
+                    resultMessage.classList.remove('loading');
+
+                    const satHtml = createResultBox(
+                        'เลขศาสตร์ (SatNum)',
+                        data.sat_num
+                    );
+
+                    const shaHtml = createResultBox(
+                        'เลขพลังเงา (ShaNum)',
+                        data.sha_num
+                    );
+
+                    resultOutput.innerHTML = satHtml + shaHtml;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    resultMessage.classList.remove('loading');
+                    resultMessage.classList.add('error');
+                    resultMessage.textContent = `เกิดข้อผิดพลาด: ${error.message}`;
+                    resultOutput.innerHTML = '';
+                });
+        });
+
+        // 🚀 --- [นี่คือจุดที่แก้ไข] --- 🚀
+        function createResultBox(title, dataSet) {
+            let listItems = '';
+            if (dataSet.matched_chars && dataSet.matched_chars.length > 0) {
+
+                dataSet.matched_chars.forEach(char => {
+                    // 🚀 [แก้ไข] ลบเครื่องหมาย ' (Single Quote) ออก
+                    // ของเดิม: listItems += `<li>'${char.character}' (ค่า: ${char.value})</li>`;
+                    // ของใหม่:
+                    listItems += `<li>${char.character} (ค่า: ${char.value})</li>`;
+                });
+
+            } else {
+                listItems = '<li>ไม่พบอักษรที่ตรงกัน</li>';
+            }
+
+            return `
+                <div class="result-box">
+                    <h4>${title}</h4>
+                    <ul>${listItems}</ul>
+                    <div class="total">ผลรวมทั้งหมด: ${dataSet.total_sum || 0}</div>
+                </div>
+            `;
+        }
+    });
+</script>

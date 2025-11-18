@@ -9,10 +9,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// --- 🚀 [ใหม่] Handlers สำหรับ Pages ---
+// --- Handlers สำหรับ Pages ---
 
 // 1. Handler สำหรับหน้าแรก
 func serveHomePage(c *fiber.Ctx) error {
+	// 🚀 [เพิ่ม] บังคับ Header ให้เป็น UTF-8
+	c.Set(fiber.HeaderContentType, fiber.MIMETextHTMLCharsetUTF8)
+
 	return c.Render("home", fiber.Map{
 		"Title": "หน้าแรก - NumberNiceIC",
 	}, "layouts/main")
@@ -20,20 +23,25 @@ func serveHomePage(c *fiber.Ctx) error {
 
 // 2. Handler สำหรับหน้าวิเคราะห์ชื่อ
 func serveAnalyzeNamePage(c *fiber.Ctx) error {
+	// 🚀 [เพิ่ม] บังคับ Header ให้เป็น UTF-8
+	c.Set(fiber.HeaderContentType, fiber.MIMETextHTMLCharsetUTF8)
+
 	return c.Render("analyze_name", fiber.Map{
 		"Title": "วิเคราะห์ชื่อ - NumberNiceIC",
 	}, "layouts/main")
 }
 
-// 3. Handler สำหรับหน้า API Docs (นี่คือฟังก์ชันเดิมของคุณ)
+// 3. Handler สำหรับหน้า API Docs
 func serveApiDocsPage(c *fiber.Ctx) error {
-	// "api_docs" คือชื่อไฟล์ .gohtml ใหม่ที่เราเพิ่งเปลี่ยน
+	// 🚀 [เพิ่ม] บังคับ Header ให้เป็น UTF-8
+	c.Set(fiber.HeaderContentType, fiber.MIMETextHTMLCharsetUTF8)
+
 	return c.Render("api_docs", fiber.Map{
 		"Title": "API Docs - NumberNiceIC",
 	}, "layouts/main")
 }
 
-// --- จบส่วน Handlers ใหม่ ---
+// --- จบส่วน Handlers Pages ---
 
 func SetupRoutes(app *fiber.App, db *sql.DB) {
 
@@ -42,9 +50,10 @@ func SetupRoutes(app *fiber.App, db *sql.DB) {
 	numberService := services.NewNumberService(numberRepo)
 	numberHandler := handlers.NewNumberHandler(numberService)
 
-	// --- Setup for SatNums (ของเดิม) ---
+	// --- Setup for Analysis (เลขศาสตร์ + พลังเงา) (ของเดิม) ---
 	satNumRepo := repository.NewSatNumRepository(db)
-	satNumService := services.NewSatNumService(satNumRepo)
+	shaNumRepo := repository.NewShaNumRepository(db)
+	satNumService := services.NewSatNumService(satNumRepo, shaNumRepo)
 	satNumHandler := handlers.NewSatNumHandler(satNumService)
 
 	// --- API Group (ของเดิม) ---
@@ -57,15 +66,8 @@ func SetupRoutes(app *fiber.App, db *sql.DB) {
 	v1.Get("/satnums", satNumHandler.GetAllSatNums)
 	v1.Post("/satnums/calculate", satNumHandler.CalculateAstrology)
 
-	// --- 🚀 [ใหม่] Page Routes (อัปเดตส่วนนี้) ---
-
-	// "/" (หน้าแรก) จะไปที่ serveHomePage
+	// --- Page Routes (ของเดิม) ---
 	app.Get("/", serveHomePage)
-
-	// "/analyze-name" จะไปที่ serveAnalyzeNamePage
 	app.Get("/analyze-name", serveAnalyzeNamePage)
-
-	// "/api-docs" จะไปที่ serveApiDocsPage (หน้า API เดิม)
 	app.Get("/api-docs", serveApiDocsPage)
-
 }

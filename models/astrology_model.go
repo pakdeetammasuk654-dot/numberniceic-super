@@ -1,18 +1,26 @@
 package models
 
-// MatchedChar เก็บรายละเอียดของอักษรที่ตรงกับเลขศาสตร์
+// MatchedChar (เหมือนเดิม)
 type MatchedChar struct {
 	Character string `json:"character"`
 	Value     int    `json:"value"`
 }
 
-// CalculationResult คือผลลัพธ์ทั้งหมดที่จะส่งกลับไป
-type CalculationResult struct {
+// 🚀 [เปลี่ยนชื่อ] เปลี่ยน CalculationResult เป็น AstrologySet
+// นี่คือชุดผลลัพธ์สำหรับ 1 ประเภท (เช่น เลขศาสตร์)
+type AstrologySet struct {
 	MatchedChars []MatchedChar `json:"matched_chars"`
 	TotalSum     int           `json:"total_sum"`
 }
 
-// AstrologyRequest คือโครงสร้าง JSON ที่เราคาดหวังจาก user
+// 🚀 [ใหม่] นี่คือ Model ผลลัพธ์ใหม่ที่จะส่งกลับไป
+// มันจะห่อหุ้มผลลัพธ์ 2 ชุดไว้ด้วยกัน
+type AnalysisResult struct {
+	SatNum AstrologySet `json:"sat_num"`
+	ShaNum AstrologySet `json:"sha_num"`
+}
+
+// AstrologyRequest (เหมือนเดิม)
 type AstrologyRequest struct {
 	Name string `json:"name"`
 }
