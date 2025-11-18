@@ -37,7 +37,7 @@
 
     /* 🚀 [อัปเดต] Style สำหรับ "สรุปคะแนน" (Goal 1) */
     #score-summary-container {
-        display: none;
+        /* (เราลบ display: none; ออก เพราะ Alpine.js จะจัดการเอง) */
         margin-top: 20px;
         background-color: #fdfdfd;
         padding: 20px;
@@ -98,7 +98,7 @@
 
     /* ... (Style .summary-pairs-container ฯลฯ เหมือนเดิม) ... */
     #summary-pairs-container {
-        display: none;
+        /* (เราลบ display: none; ออก) */
         margin-top: 20px;
         background-color: #fff;
         padding: 20px;
@@ -125,18 +125,20 @@
         font-size: 0.9em;
     }
 
-    /* ... (Style .result-container, .result-box, .meaning-item ฯลฯ เหมือนเดิม) ... */
+    /* ... (Style .result-container, .meaning-item ฯลฯ เหมือนเดิม) ... */
     #result-container {
         margin-top: 30px;
         border-top: 2px dashed #eee;
         padding-top: 20px;
     }
+    /* 👈 [ลบ] .result-wrapper (เราไม่ใช้ 2 คอลัมน์แล้ว) */
+
     .result-box {
         background-color: #f9f9f9;
         border: 1px solid #eee;
         padding: 20px;
         border-radius: 8px;
-        margin-bottom: 20px;
+        margin-bottom: 20px; /* 👈 [ใหม่] */
     }
     .result-box h4 {
         margin-top: 0;
@@ -203,24 +205,36 @@
         text-align: center;
         padding: 10px 0;
     }
-    #result-message.error { color: #e74c3c; font-weight: bold; }
-    #result-message.loading { color: #95a5a6; }
+    .message-box {
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+    .message-box.loading {
+        background-color: #f0f4f8;
+        color: #95a5a6;
+    }
+    .message-box.error {
+        background-color: #fdedec;
+        color: #e74c3c;
+        font-weight: bold;
+    }
 </style>
 
+<div class="analyze-container" x-data="analysisComponent()">
 
-<div class="analyze-container">
     <h2>วิเคราะห์ชื่อตามหลักเลขศาสตร์และพลังเงา</h2>
     <p>ป้อนชื่อของคุณและเลือกวันเกิดเพื่อดูผลรวม และอักษรกาลกิณี</p>
 
-    <form id="analyze-form">
+    <form @submit.prevent="analyzeName">
         <div class="form-group-wrapper" style="display: flex; gap: 20px;">
             <div class="form-group" style="flex: 2;">
                 <label for="nameInput">ป้อนชื่อของคุณ:</label>
-                <input type="text" id="nameInput" placeholder="เช่น สมชาย, แสงสว่าง..." required>
+                <input type="text" id="nameInput" x-model="name" placeholder="เช่น สมชาย, แสงสว่าง..." required>
             </div>
             <div class="form-group" style="flex: 1;">
                 <label for="daySelect">เลือกวันเกิด:</label>
-                <select id="daySelect" required>
+                <select id="daySelect" x-model="day" required>
                     <option value="">-- กรุณาเลือก --</option>
                     <option value="sunday">วันอาทิตย์</option>
                     <option value="monday">วันจันทร์</option>
@@ -233,10 +247,12 @@
                 </select>
             </div>
         </div>
-        <button type="submit" class="btn">วิเคราะห์</button>
+        <button type="submit" class="btn" :disabled="loading">
+            <span x-text="loading ? 'กำลังวิเคราะห์...' : 'วิเคราะห์'"></span>
+        </button>
     </form>
 
-    <div id="score-summary-container" style="display: none;">
+    <div id="score-summary-container" x-show="results">
         <h4>สรุปคะแนน (รวม SatNum & ShaNum):</h4>
 
         <div class="score-wrapper">
@@ -244,245 +260,200 @@
             <div class="score-left-stack">
                 <div class="score-box good">
                     <span>คะแนนดี</span>
-                    <strong id="score-good">0</strong>
+                    <strong id="score-good" x-text="calculatedScores.good">0</strong>
                 </div>
                 <div class="score-box bad">
                     <span>คะแนนร้าย</span>
-                    <strong id="score-bad">0</strong>
+                    <strong id="score-bad" x-text="calculatedScores.bad">0</strong>
                 </div>
             </div>
 
             <div class="score-box total">
                 <span>คะแนนรวม</span>
-                <strong id="score-total">0</strong>
+                <strong id="score-total" x-text="calculatedScores.total">0</strong>
             </div>
 
         </div>
     </div>
-    <div id="summary-pairs-container" style="display: none;">
+
+    <div id="summary-pairs-container" x-show="results">
         <h4>สรุปคู่เลข (ไม่นับซ้ำ):</h4>
         <div id="summary-pairs-output" class="summary-pairs-wrapper">
+            <template x-for="meaning in uniqueMeanings" :key="meaning.pairnumber">
+                <div class="summary-pair-circle"
+                     :class="getPairTypeClass(meaning.pairtype)"
+                     x-text="meaning.pairnumber">
+                </div>
+            </template>
         </div>
     </div>
+
 
     <div id="result-container">
         <h3>ผลลัพธ์:</h3>
-        <p id="result-message"></p>
-        <div id="kakis-output"></div>
-        <div class="result-box" id="predictions-box" style="display: none;">
-            <h4>คำทำนาย (จากคู่เลขที่ไม่ซ้ำกัน)</h4>
-            <div class="meanings-wrapper" id="predictions-output">
-            </div>
-        </div>
-    </div>
-</div>
 
+        <div x-show="loading" class="message-box loading">กำลังวิเคราะห์...</div>
+        <div x-show="error" class="message-box error" x-text="error"></div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // ... (ส่วน
-        const analyzeForm = document.getElementById('analyze-form');
-        const nameInput = document.getElementById('nameInput');
-        const daySelect = document.getElementById('daySelect');
-
-        const resultMessage = document.getElementById('result-message');
-        const kakisOutput = document.getElementById('kakis-output');
-
-        const scoreSummaryContainer = document.getElementById('score-summary-container');
-        const summaryPairsContainer = document.getElementById('summary-pairs-container');
-        const summaryPairsOutput = document.getElementById('summary-pairs-output');
-
-        const predictionsBox = document.getElementById('predictions-box');
-        const predictionsOutput = document.getElementById('predictions-output');
-
-
-        analyzeForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const nameToAnalyze = nameInput.value;
-            const dayToAnalyze = daySelect.value;
-
-            // (ล้างค่าเก่า)
-            resultMessage.classList.remove('error');
-            resultMessage.classList.add('loading');
-            resultMessage.textContent = 'กำลังวิเคราะห์...';
-            kakisOutput.innerHTML = '';
-            summaryPairsOutput.innerHTML = '';
-            predictionsOutput.innerHTML = '';
-            summaryPairsContainer.style.display = 'none';
-            scoreSummaryContainer.style.display = 'none';
-            predictionsBox.style.display = 'none';
-
-            fetch('/api/v1/satnums/calculate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: nameToAnalyze,
-                    day: dayToAnalyze
-                })
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(errData => {
-                            if (errData.error === 'Day field is required') {
-                                throw new Error('กรุณาเลือกวันเกิด');
-                            }
-                            throw new Error(errData.error || 'เกิดข้อผิดพลาดจาก Server');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    resultMessage.textContent = '';
-                    resultMessage.classList.remove('loading');
-
-                    // 1. (เหมือนเดิม) แสดงผล Kakis
-                    const kakisHtml = createKakisBox(data.kakis_found);
-                    kakisOutput.innerHTML = kakisHtml;
-
-                    // 2. (เหมือนเดิม) รวบรวมข้อมูล
-                    const allMeanings = (data.sat_num.sum_meanings || []).concat(data.sha_num.sum_meanings || []);
-                    const uniqueMeanings = new Map();
-                    allMeanings.forEach(meaning => {
-                        if (meaning.pairnumber && !uniqueMeanings.has(meaning.pairnumber)) {
-                            uniqueMeanings.set(meaning.pairnumber, meaning);
-                        }
-                    });
-
-                    // 3. (เหมือนเดิม) แสดงผลสรุปคะแนน (ใช้ allMeanings เพื่อ "นับซ้ำ")
-                    renderOverallScore(allMeanings);
-                    scoreSummaryContainer.style.display = 'block';
-
-                    // 4. (เหมือนเดิม) แสดงผลสรุปคู่เลข (ใช้ uniqueMeanings เพื่อ "ไม่แสดงซ้ำ")
-                    renderSummaryPairs(uniqueMeanings);
-                    summaryPairsContainer.style.display = 'block';
-
-                    // 5. (เหมือนเดิม) แสดงผลคำทำนาย (ใช้ uniqueMeanings เพื่อ "ไม่แสดงซ้ำ")
-                    renderDetailedPredictions(uniqueMeanings);
-                    predictionsBox.style.display = 'block';
-
-                })
-                .catch(error => {
-                    // (ล้างค่าตอน Error)
-                    console.error('Error:', error);
-                    resultMessage.classList.remove('loading');
-                    resultMessage.classList.add('error');
-                    resultMessage.textContent = `เกิดข้อผิดพลาด: ${error.message}`;
-                    kakisOutput.innerHTML = '';
-                    summaryPairsOutput.innerHTML = '';
-                    predictionsOutput.innerHTML = '';
-                    summaryPairsContainer.style.display = 'none';
-                    scoreSummaryContainer.style.display = 'none';
-                    predictionsBox.style.display = 'none';
-                });
-        });
-
-        // (ฟังก์ชัน renderOverallScore - เหมือนเดิม)
-        function renderOverallScore(allMeanings) {
-            let goodScore = 0;
-            let badScore = 0;
-
-            allMeanings.forEach(meaning => {
-                const point = meaning.pairpoint;
-                if (point) {
-                    if (point > 0) {
-                        goodScore += point;
-                    } else if (point < 0) {
-                        badScore += point;
-                    }
-                }
-            });
-
-            document.getElementById('score-good').textContent = goodScore;
-            document.getElementById('score-bad').textContent = badScore;
-            document.getElementById('score-total').textContent = goodScore + badScore;
-        }
-
-        // (ฟังก์ชัน renderSummaryPairs - เหมือนเดิม)
-        function renderSummaryPairs(uniqueMeaningsMap) {
-            let summaryHtml = '';
-
-            uniqueMeaningsMap.forEach(meaning => {
-                const pairClass = getPairTypeClass(meaning.pairtype);
-                summaryHtml += `<div class="summary-pair-circle ${pairClass}">${meaning.pairnumber}</div>`;
-            });
-
-            if (summaryHtml === '') {
-                summaryHtml = '<p>ไม่พบคู่เลขจากผลรวม</p>';
-            }
-            summaryPairsOutput.innerHTML = summaryHtml;
-        }
-
-        // (ฟังก์ชัน renderDetailedPredictions - เหมือนเดิม)
-        function renderDetailedPredictions(uniqueMeaningsMap) {
-            let meaningsHtml = '';
-
-            if (uniqueMeaningsMap.size === 0) {
-                meaningsHtml = `<p>ไม่พบความหมายสำหรับผลรวม</p>`;
-            } else {
-                uniqueMeaningsMap.forEach(meaning => {
-                    const pairClass = getPairTypeClass(meaning.pairtype);
-                    meaningsHtml += `
-                        <div class="meaning-item">
-                            <div class="meaning-circle ${pairClass}">
-                                ${meaning.pairnumber || '?'}
-                            </div>
-                            <div class="meaning-text">
-                                <strong>${meaning.miracledetail || 'ไม่พบหัวข้อ'}</strong>
-                                <p>${meaning.miracledesc || 'ไม่พบคำอธิบาย'}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-            predictionsOutput.innerHTML = meaningsHtml;
-        }
-
-        // (ฟังก์ชัน getPairTypeClass - เหมือนเดิม)
-        function getPairTypeClass(pairType) {
-            if (!pairType) return 'pairtype-default';
-            const pt = pairType.trim().toUpperCase();
-
-            if (pt === 'D10') return 'pairtype-D10';
-            if (pt === 'D8') return 'pairtype-D8';
-            if (pt === 'D5') return 'pairtype-D5';
-
-            if (pt === 'R10') return 'pairtype-R10';
-            if (pt === 'R7') return 'pairtype-R7';
-            if (pt === 'R5') return 'pairtype-R5';
-
-            if (pt === 'N') return 'pairtype-N';
-
-            if (pairType.includes('ดี')) return 'pairtype-D8';
-            if (pairType.includes('ร้าย')) return 'pairtype-R7';
-            if (pairType.includes('กลาง')) return 'pairtype-N';
-
-            return 'pairtype-default';
-        }
-
-        // (ฟังก์ชัน createKakisBox - เหมือนเดิม)
-        function createKakisBox(kakisArray) {
-            if (!kakisArray || kakisArray.length === 0) {
-                return `
-                    <div class="result-box" style="background-color: #f6fff8; border-color: #27ae60;">
+        <div id="kakis-output" x-show="results">
+            <template x-if="results"> <div>
+                    <div x-show="results.kakis_found.length === 0" class="result-box" style="background-color: #f6fff8; border-color: #27ae60;">
                         <h4 style="color: #27ae60;">อักษรกาลกิณี (Kakis)</h4>
                         <p style="text-align: center; font-weight: bold; font-size: 1.1em; margin-bottom: 0;">
                             🎉 ยอดเยี่ยม! ไม่พบอักษรกาลกิณีในชื่อนี้สำหรับวันที่คุณเลือก
                         </p>
                     </div>
-                `;
-            }
-            return `
-                <div class="result-box kakis">
-                    <h4>อักษรกาลกิณี (Kakis)</h4>
-                    <p style="margin-top: 0;">พบอักษรกาลกิณีสำหรับวันที่คุณเลือก:</p>
-                    <div class="kakis-list">
-                        ${kakisArray.join(' , ')}
+                    <div x-show="results.kakis_found.length > 0" class="result-box kakis">
+                        <h4>อักษรกาลกิณี (Kakis)</h4>
+                        <p style="margin-top: 0;">พบอักษรกาลกิณีสำหรับวันที่คุณเลือก:</p>
+                        <div class="kakis-list" x-text="results.kakis_found.join(' , ')">
+                        </div>
                     </div>
                 </div>
-            `;
-        }
+            </template>
+        </div>
+
+        <div class="result-box" id="predictions-box" x-show="results">
+            <h4>คำทำนาย (จากคู่เลขที่ไม่ซ้ำกัน)</h4>
+            <div class="meanings-wrapper" id="predictions-output">
+                <template x-for="meaning in uniqueMeanings" :key="meaning.pairnumber">
+                    <div class="meaning-item">
+                        <div class="meaning-circle"
+                             :class="getPairTypeClass(meaning.pairtype)"
+                             x-text="meaning.pairnumber">
+                        </div>
+                        <div class="meaning-text">
+                            <strong x-text="meaning.miracledetail || 'ไม่พบหัวข้อ'"></strong>
+                            <p x-text="meaning.miracledesc || 'ไม่พบคำอธิบาย'"></p>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('analysisComponent', () => ({
+
+            // 1. State (สถานะของข้อมูล)
+            name: '',
+            day: '',
+            loading: false,
+            error: null,
+            results: null, // 👈 นี่คือ JSON ที่ได้จาก API
+
+            // 2. Computed Properties (Getters)
+            // (คำนวณค่าอัตโนมัติ เมื่อ 'results' เปลี่ยน)
+
+            // (คำนวณคะแนน - นับซ้ำ)
+            get calculatedScores() {
+                if (!this.results) return { good: 0, bad: 0, total: 0 };
+
+                let goodScore = 0;
+                let badScore = 0;
+
+                // 2a. รวม Array (นับซ้ำได้)
+                const allMeanings = (this.results.sat_num.sum_meanings || [])
+                    .concat(this.results.sha_num.sum_meanings || []);
+
+                // 2b. วนลูปนับคะแนน
+                allMeanings.forEach(meaning => {
+                    const point = meaning.pairpoint;
+                    if (point) {
+                        if (point > 0) goodScore += point;
+                        else if (point < 0) badScore += point;
+                    }
+                });
+
+                return {
+                    good: goodScore,
+                    bad: badScore,
+                    total: goodScore + badScore
+                };
+            },
+
+            // (หาคู่เลข/ความหมาย ที่ไม่ซ้ำ)
+            get uniqueMeanings() {
+                if (!this.results) return [];
+
+                const allMeanings = (this.results.sat_num.sum_meanings || [])
+                    .concat(this.results.sha_num.sum_meanings || []);
+
+                const uniqueMap = new Map();
+                allMeanings.forEach(meaning => {
+                    if (meaning.pairnumber && !uniqueMap.has(meaning.pairnumber)) {
+                        uniqueMap.set(meaning.pairnumber, meaning);
+                    }
+                });
+
+                return Array.from(uniqueMap.values()); // 👈 คืนค่าเป็น Array
+            },
+
+            // 3. Methods (ฟังก์ชันที่เรียกใช้งาน)
+
+            // (ฟังก์ชันยิง API)
+            async analyzeName() {
+                this.loading = true;
+                this.error = null;
+                this.results = null; // 👈 ล้างค่าเก่า
+
+                try {
+                    const response = await fetch('/api/v1/satnums/calculate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: this.name,
+                            day: this.day
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        if (data.error === 'Day field is required') {
+                            throw new Error('กรุณาเลือกวันเกิด');
+                        }
+                        throw new Error(data.error || 'เกิดข้อผิดพลาดจาก Server');
+                    }
+
+                    // 🚀 [สำเร็จ] อัปเดต 'results' ที่นี่
+                    this.results = data;
+
+                } catch (err) {
+                    console.error('Error:', err);
+                    this.error = `เกิดข้อผิดพลาด: ${err.message}`;
+                } finally {
+                    this.loading = false; // 👈 สั่งหยุดโหลด (ไม่ว่าจะสำเร็จหรือล้มเหลว)
+                }
+            },
+
+            // (ฟังก์ชันแปลงสี - เหมือนเดิม)
+            getPairTypeClass(pairType) {
+                if (!pairType) return 'pairtype-default';
+                const pt = pairType.trim().toUpperCase();
+
+                if (pt === 'D10') return 'pairtype-D10';
+                if (pt === 'D8') return 'pairtype-D8';
+                if (pt === 'D5') return 'pairtype-D5';
+
+                if (pt === 'R10') return 'pairtype-R10';
+                if (pt === 'R7') return 'pairtype-R7';
+                if (pt === 'R5') return 'pairtype-R5';
+
+                if (pt === 'N') return 'pairtype-N';
+
+                if (pairType.includes('ดี')) return 'pairtype-D8';
+                if (pairType.includes('ร้าย')) return 'pairtype-R7';
+                if (pairType.includes('กลาง')) return 'pairtype-N';
+
+                return 'pairtype-default';
+            }
+        }))
     });
 </script>
