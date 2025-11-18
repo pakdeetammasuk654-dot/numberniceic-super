@@ -1,81 +1,63 @@
-<style>
-    .container {
-        padding: 20px;
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    h2 {
-        color: #2c3e50;
-        border-bottom: 2px solid #3498db;
-        padding-bottom: 10px;
-    }
-    .route {
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 15px;
-        margin-bottom: 15px;
-        background-color: #fafafa;
-    }
-    .route-path {
-        font-family: "Courier New", Courier, monospace;
-        font-size: 1.1em;
-        background-color: #eee;
-        padding: 3px 8px;
-        border-radius: 4px;
-    }
-    .method {
-        font-weight: bold;
-        font-size: 1.1em;
-        color: #fff;
-        padding: 4px 10px;
-        border-radius: 4px;
-        display: inline-block;
-        min-width: 60px;
-        text-align: center;
-    }
-    .method-get { background-color: #27ae60; }
-    .method-post { background-color: #2980b9; }
-</style>
-
-<div class="container">
-    <h2>Available API Routes</h2>
-    <p>นี่คือรายการ API Endpoint ที่พร้อมใช้งานในระบบ (สำหรับ Mobile App)</p>
-
-    <div class="route">
-        <span class="method method-get">GET</span>
-        <span class="route-path">/api/v1/numbers</span>
-        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
-        <strong>หน้าที่:</strong> ดึงข้อมูลตัวเลข (Numbers) ทั้งหมดจากฐานข้อมูล
+<div class="bg-white shadow-lg rounded-lg p-6 space-y-4">
+    <div>
+        <h2 class="text-2xl font-semibold text-gray-900">Available API Routes</h2>
+        <p class="text-gray-600">นี่คือรายการ API Endpoint ที่พร้อมใช้งานในระบบ (สำหรับ Mobile App)</p>
     </div>
 
-    <div class="route">
-        <span class="method method-get">GET</span>
-        <span class="route-path">/api/v1/numbers/:number</span>
-        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
-        <strong>หน้าที่:</strong> ดึงข้อมูลตัวเลข 1 คู่ ตามที่ระบุ (เช่น /api/v1/numbers/12)
+    <div class="border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center space-x-3">
+            <span class="inline-flex items-center rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700">GET</span>
+            <span class="font-mono text-sm text-gray-800">/api/v1/numbers</span>
+        </div>
+        <hr class="my-3">
+        <p class="text-gray-700"><strong>หน้าที่:</strong> ดึงข้อมูลตัวเลข (Numbers) ทั้งหมดจากฐานข้อมูล</p>
     </div>
 
-    <div class="route">
-        <span class="method method-get">GET</span>
-        <span class="route-path">/api/v1/satnums</span>
-        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
-        <strong>หน้าที่:</strong> ดึงข้อมูลเลขศาสตร์ (SatNums) ทั้งหมด (สำหรับตรวจสอบ)
+    <div class="border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center space-x-3">
+            <span class="inline-flex items-center rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700">GET</span>
+            <span class="font-mono text-sm text-gray-800">/api/v1/numbers/:number</span>
+        </div>
+        <hr class="my-3">
+        <p class="text-gray-700"><strong>หน้าที่:</strong> ดึงข้อมูลตัวเลข 1 คู่ ตามที่ระบุ (เช่น /api/v1/numbers/12)</p>
     </div>
 
-    <div class="route">
-        <span class="method method-post">POST</span>
-        <span class="route-path">/api/v1/satnums/calculate</span>
-        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
-        <strong>หน้าที่:</strong> คำนวณผลรวมเลขศาสตร์, พลังเงา และค้นหากาลกิณี
-        <br>
-        <strong>Body (JSON):</strong>
-        <pre><code style="background-color: #eee; padding: 5px; border-radius: 3px; display: block; margin-top: 10px;">{
+    <div class="border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center space-x-3">
+            <span class="inline-flex items-center rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700">GET</span>
+            <span class="font-mono text-sm text-gray-800">/api/v1/satnums</span>
+        </div>
+        <hr class="my-3">
+        <p class="text-gray-700"><strong>หน้าที่:</strong> ดึงข้อมูลเลขศาสตร์ (SatNums) ทั้งหมด (สำหรับตรวจสอบ)</p>
+    </div>
+
+    <div class="border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center space-x-3">
+            <span class="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">POST</span>
+            <span class="font-mono text-sm text-gray-800">/api/v1/satnums/calculate</span>
+        </div>
+        <hr class="my-3">
+        <p class="text-gray-700"><strong>หน้าที่:</strong> คำนวณผลรวมเลขศาสตร์, พลังเงา และค้นหากาลกิณี</p>
+        <div class="mt-2">
+            <strong class="text-gray-700">Body (JSON):</strong>
+            <pre class="bg-gray-100 rounded-md p-3 mt-1 overflow-x-auto"><code class="text-sm">{
   "name": "ชื่อของคุณ",
   "day": "monday"
 }</code></pre>
-        <strong>ค่า Day ที่รองรับ:</strong>
-        <code>sunday</code>, <code>monday</code>, <code>tuesday</code>, <code>wednesday1</code> (พุธกลางวัน), <code>wednesday2</code> (พุธกลางคืน), <code>thursday</code>, <code>friday</code>, <code>saturday</code>
+        </div>
+        <div class="mt-2">
+            <strong class="text-gray-700">ค่า Day ที่รองรับ:</strong>
+            <div class="flex flex-wrap gap-2 mt-1">
+                <code class="text-xs bg-gray-100 px-2 py-0.5 rounded">sunday</code>
+                <code class="text-xs bg-gray-100 px-2 py-0.5 rounded">monday</code>
+                <code class="text-xs bg-gray-100 px-2 py-0.5 rounded">tuesday</code>
+                <code class="text-xs bg-gray-100 px-2 py-0.5 rounded">wednesday1</code>
+                <code class="text-xs bg-gray-100 px-2 py-0.5 rounded">wednesday2</code>
+                <code class="text-xs bg-gray-100 px-2 py-0.5 rounded">thursday</code>
+                <code class="text-xs bg-gray-100 px-2 py-0.5 rounded">friday</code>
+                <code class="text-xs bg-gray-100 px-2 py-0.5 rounded">saturday</code>
+            </div>
+        </div>
     </div>
 
 </div>

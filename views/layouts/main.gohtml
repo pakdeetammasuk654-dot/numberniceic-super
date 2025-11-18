@@ -4,105 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Title}}</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            background-color: #f9f9f9;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
 
-        /* --- HEADER (ของเดิม) --- */
-        .layout-header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 20px 40px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            /* เราจะปรับ header ให้มี 2 แถว
-              คือ แถวชื่อเว็บ และ แถวเมนู
-            */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .layout-header h1 {
-            margin: 0;
-            font-size: 1.5em;
-        }
+    <script src="https://cdn.tailwindcss.com"></script>
 
-        /* --- 🚀 [ใหม่] NAVBAR MENU --- */
-        .navbar {
-            background-color: #34495e;
-            padding: 0 40px;
-        }
-        .navbar ul {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-            display: flex;
-        }
-        .navbar li a {
-            display: block;
-            padding: 15px 20px;
-            color: #ecf0f1;
-            text-decoration: none;
-            font-weight: 500;
-            transition: background-color 0.3s;
-        }
-        .navbar li a:hover,
-        .navbar li a.active { /* (เราจะเพิ่ม .active ในอนาคต) */
-            background-color: #2c3e50;
-            color: #fff;
-        }
-        /* --- จบส่วน Navbar --- */
-
-
-        /* --- CONTENT (ของเดิม) --- */
-        .layout-content {
-            flex: 1;
-            width: 100%;
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 0 20px;
-            box-sizing: border-box;
-        }
-
-        /* --- FOOTER (ของเดิม) --- */
-        .layout-footer {
-            background-color: #34495e;
-            color: #ecf0f1;
-            padding: 20px 40px;
-            text-align: center;
-            margin-top: auto;
-        }
-    </style>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/countup@3.x.x/dist/cdn.min.js"></script>
+
 </head>
-<body>
+<body class="bg-gray-100 antialiased">
 
-<header class="layout-header">
-    <h1>NumberNiceIC API Service</h1>
-
+<header class="bg-white shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <h1 class="text-2xl font-bold text-gray-800">NumberNiceIC</h1>
+        </div>
+    </div>
 </header>
 
-<nav class="navbar">
-    <ul>
-        <li><a href="/">หน้าแรก</a></li>
-        <li><a href="/analyze-name">วิเคราะห์ชื่อ</a></li>
-        <li><a href="/api-docs">API</a></li>
-        <li><a href="/#">แดชบอร์ด</a></li> <li><a href="/#">บทความ</a></li> <li><a href="/#">เกี่ยวกับเรา</a></li> </ul>
+<nav class="bg-gray-800">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center h-12">
+            <div class="flex space-x-4">
+                <a href="/" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">หน้าแรก</a>
+                <a href="/analyze-name" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">วิเคราะห์ชื่อ</a>
+                <a href="/api-docs" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">API</a>
+                <a href="/#" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">แดชบอร์ด</a>
+                <a href="/#" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">บทความ</a>
+                <a href="/#" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">เกี่ยวกับเรา</a>
+            </div>
+        </div>
+    </div>
 </nav>
 
 
-<main class="layout-content">
-    {{embed}}
+<main class="max-w-5xl mx-auto py-6 sm:px-6 lg:px-8 w-full">
+    <div class="px-4 py-6 sm:px-0">
+        {{embed}}
+    </div>
 </main>
 
-<footer class="layout-footer">
-    <p>&copy; 2025 NumberNiceIC. All Rights Reserved.</p>
+<footer class="bg-gray-800 mt-auto">
+    <div class="max-w-5xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+        <p class="text-center text-sm text-gray-400">
+            &copy; 2025 NumberNiceIC. All Rights Reserved.
+        </p>
+    </div>
 </footer>
 
 </body>
