@@ -6,23 +6,25 @@ type MatchedChar struct {
 	Value     int    `json:"value"`
 }
 
-// AstrologySet (เหมือนเดิม)
+// AstrologySet (อัปเดต)
 type AstrologySet struct {
 	MatchedChars []MatchedChar `json:"matched_chars"`
 	TotalSum     int           `json:"total_sum"`
+
+	// 🚀 [ใหม่] เราจะเก็บ "ความหมาย" ของผลรวม (จากตาราง numbers)
+	// (ใช้ []Number เพราะผลรวม 100 อาจได้ 2 ความหมาย)
+	SumMeanings []Number `json:"sum_meanings,omitempty"`
 }
 
-// AnalysisResult (อัปเดต)
+// AnalysisResult (เหมือนเดิม)
 type AnalysisResult struct {
-	SatNum AstrologySet `json:"sat_num"`
-	ShaNum AstrologySet `json:"sha_num"`
-	// 🚀 [ใหม่] เพิ่มช่องสำหรับอักษรกาลกิณีที่พบ
-	KakisFound []string `json:"kakis_found,omitempty"`
+	SatNum     AstrologySet `json:"sat_num"`
+	ShaNum     AstrologySet `json:"sha_num"`
+	KakisFound []string     `json:"kakis_found,omitempty"`
 }
 
-// AstrologyRequest (อัปเดต)
+// AstrologyRequest (เหมือนเดิม)
 type AstrologyRequest struct {
 	Name string `json:"name"`
-	// 🚀 [ใหม่] เพิ่มช่องสำหรับรับ "วันเกิด"
-	Day string `json:"day"`
+	Day  string `json:"day"`
 }

@@ -1,16 +1,16 @@
 package services
 
 import (
+	"fmt" // 👈 [ใหม่]
 	"log"
 	"numberniceic/models"
 	"numberniceic/repository"
 	"strconv"
 )
 
-// 🚀 [อัปเดต] Interface
+// AnalysisService (Interface) (เหมือนเดิม)
 type AnalysisService interface {
 	GetAllSatNums() ([]models.SatNum, error)
-	// 👈 เพิ่ม day string
 	CalculateNameAstrology(name string, day string) (models.AnalysisResult, error)
 }
 
@@ -18,23 +18,57 @@ type AnalysisService interface {
 type analysisService struct {
 	satRepo   repository.SatNumRepository
 	shaRepo   repository.ShaNumRepository
-	kakisRepo repository.KakisDayRepository // 👈 เพิ่ม repo ใหม่
+	kakisRepo repository.KakisDayRepository
+	numRepo   repository.NumberRepository // 👈 [ใหม่]
 }
 
 // 🚀 [อัปเดต] New Service
 func NewAnalysisService(
 	satRepo repository.SatNumRepository,
 	shaRepo repository.ShaNumRepository,
-	kakisRepo repository.KakisDayRepository, // 👈 เพิ่ม repo ใหม่
+	kakisRepo repository.KakisDayRepository,
+	numRepo repository.NumberRepository, // 👈 [ใหม่]
 ) AnalysisService {
 	return &analysisService{
 		satRepo:   satRepo,
 		shaRepo:   shaRepo,
-		kakisRepo: kakisRepo, // 👈 เพิ่ม repo ใหม่
+		kakisRepo: kakisRepo,
+		numRepo:   numRepo, // 👈 [ใหม่]
 	}
 }
 
-// 🚀 [อัปเดต] Logic การคำนวณ
+// 🚀 [ใหม่] ฟังก์ชัน Helper สำหรับแปลงผลรวมเป็นความหมาย
+func (s *analysisService) getMeaningsForSum(sum int) []models.Number {
+	var pairStrings []string
+
+	if sum < 10 {
+		// 1. กฎหลักหน่วย (เช่น 8 -> "08")
+		pairStrings = append(pairStrings, fmt.Sprintf("0%d", sum))
+	} else if sum > 99 {
+		// 2. กฎหลักร้อย (เช่น 100 -> "10", "00" | 123 -> "12", "23")
+		sumStr := fmt.Sprintf("%d", sum)                          // เช่น "123"
+		pairStrings = append(pairStrings, sumStr[0:2])            // "12"
+		pairStrings = append(pairStrings, sumStr[len(sumStr)-2:]) // "23"
+	} else {
+		// 3. กฎหลักสิบ (เช่น 45 -> "45")
+		pairStrings = append(pairStrings, fmt.Sprintf("%d", sum))
+	}
+
+	// 4. ดึงความหมายจาก DB
+	var meanings []models.Number
+	for _, pair := range pairStrings {
+		numberMeaning, err := s.numRepo.GetByPairNumber(pair)
+		if err != nil {
+			// ถ้าหาไม่เจอ ก็แค่ Log ไว้
+			log.Printf("Warning: No meaning found for pairnumber %s: %v", pair, err)
+			continue
+		}
+		meanings = append(meanings, numberMeaning)
+	}
+	return meanings
+}
+
+// 🚀 [อัปเดต] Logic การคำนวณ (CalculateNameAstrology)
 func (s *analysisService) CalculateNameAstrology(name string, day string) (models.AnalysisResult, error) {
 
 	// --- 1. ดึงข้อมูล (SatNum) --- (เหมือนเดิม)
@@ -60,64 +94,56 @@ func (s *analysisService) CalculateNameAstrology(name string, day string) (model
 		}
 	}
 
-	// --- 3. 🚀 [ใหม่] ดึงข้อมูล (Kakis) ---
+	// --- 3. ดึงข้อมูล (Kakis) --- (เหมือนเดิม)
 	kakisChars, err := s.kakisRepo.GetKakisByDay(day)
-	if err != nil {
-		// (ถ้าหาไม่เจอ ก็แค่ Log ไว้ แต่ไม่ควรหยุดการทำงาน)
-		log.Printf("Warning: Could not retrieve Kakis for day %s: %v", day, err)
+	if err != nil { /* ... */
 	}
-	// สร้าง Map เพื่อค้นหา Kakis ได้เร็ว
 	kakisMap := make(map[string]bool)
 	for _, char := range kakisChars {
 		kakisMap[char] = true
 	}
 
-	// --- 4. เตรียมตัวแปร (อัปเดต) ---
+	// --- 4. เตรียมตัวแปร (เหมือนเดิม) ---
 	var satTotalSum int = 0
 	var satMatchedChars []models.MatchedChar
 	var shaTotalSum int = 0
 	var shaMatchedChars []models.MatchedChar
-	var kakisFound []string // 👈 [ใหม่]
+	var kakisFound []string
 
-	// --- 5. วนลูป "ชื่อ" (อัปเดต) ---
+	// --- 5. วนลูป "ชื่อ" (เหมือนเดิม) ---
 	for _, charRune := range name {
 		charStr := string(charRune)
-
-		// 5a. Check SatNum (เหมือนเดิม)
-		if val, ok := satMap[charStr]; ok {
+		if val, ok := satMap[charStr]; ok { /* ... */
 			satTotalSum += val
-			satMatchedChars = append(satMatchedChars, models.MatchedChar{
-				Character: charStr,
-				Value:     val,
-			})
+			satMatchedChars = append(satMatchedChars, models.MatchedChar{Character: charStr, Value: val})
 		}
-
-		// 5b. Check ShaNum (เหมือนเดิม)
-		if val, ok := shaMap[charStr]; ok {
+		if val, ok := shaMap[charStr]; ok { /* ... */
 			shaTotalSum += val
-			shaMatchedChars = append(shaMatchedChars, models.MatchedChar{
-				Character: charStr,
-				Value:     val,
-			})
+			shaMatchedChars = append(shaMatchedChars, models.MatchedChar{Character: charStr, Value: val})
 		}
-
-		// 5c. 🚀 [ใหม่] Check Kakis
 		if _, ok := kakisMap[charStr]; ok {
 			kakisFound = append(kakisFound, charStr)
 		}
 	}
 
-	// --- 6. สร้างผลลัพธ์สุดท้าย (อัปเดต) ---
+	// --- 6. 🚀 [อัปเดต] สร้างผลลัพธ์สุดท้าย ---
+
+	// 👈 [ใหม่] เรียก Helper เพื่อหาความหมาย
+	satMeanings := s.getMeaningsForSum(satTotalSum)
+	shaMeanings := s.getMeaningsForSum(shaTotalSum)
+
 	result := models.AnalysisResult{
 		SatNum: models.AstrologySet{
 			MatchedChars: satMatchedChars,
 			TotalSum:     satTotalSum,
+			SumMeanings:  satMeanings, // 👈 [ใหม่]
 		},
 		ShaNum: models.AstrologySet{
 			MatchedChars: shaMatchedChars,
 			TotalSum:     shaTotalSum,
+			SumMeanings:  shaMeanings, // 👈 [ใหม่]
 		},
-		KakisFound: kakisFound, // 👈 [ใหม่]
+		KakisFound: kakisFound,
 	}
 
 	return result, nil

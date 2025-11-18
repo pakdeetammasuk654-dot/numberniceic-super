@@ -13,6 +13,7 @@ import (
 func SetupApiRoutes(app *fiber.App, db *sql.DB) {
 
 	// --- Setup for Numbers ---
+	// (เราจะใช้ numberRepo นี้)
 	numberRepo := repository.NewNumberRepository(db)
 	numberService := services.NewNumberService(numberRepo)
 	numberHandler := handlers.NewNumberHandler(numberService)
@@ -22,11 +23,11 @@ func SetupApiRoutes(app *fiber.App, db *sql.DB) {
 	shaNumRepo := repository.NewShaNumRepository(db)
 	kakisDayRepo := repository.NewKakisDayRepository(db)
 
-	analysisService := services.NewAnalysisService(satNumRepo, shaNumRepo, kakisDayRepo)
+	// 🚀 [อัปเดต] ส่ง numberRepo (ตัวที่ 4) เข้าไป
+	analysisService := services.NewAnalysisService(satNumRepo, shaNumRepo, kakisDayRepo, numberRepo)
 	analysisHandler := handlers.NewAnalysisHandler(analysisService)
 
 	// --- API Group ---
-	// นี่คือส่วนที่ Mobile App จะเรียกใช้
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
 
