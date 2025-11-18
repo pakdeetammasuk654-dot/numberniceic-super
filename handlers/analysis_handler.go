@@ -2,22 +2,21 @@ package handlers
 
 import (
 	"numberniceic/models"
-	"numberniceic/services" // 👈 (อันนี้ยังชี้ไปที่ services)
+	"numberniceic/services"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-// 🚀 [เปลี่ยน] เปลี่ยน struct
+// (Struct และ NewAnalysisHandler เหมือนเดิม)
 type AnalysisHandler struct {
-	Service services.AnalysisService // 👈 [เปลี่ยน] เปลี่ยน Interface
+	Service services.AnalysisService
 }
 
-// 🚀 [เปลี่ยน] เปลี่ยนชื่อฟังก์ชัน New
 func NewAnalysisHandler(service services.AnalysisService) *AnalysisHandler {
 	return &AnalysisHandler{Service: service}
 }
 
-// (ฟังก์ชัน CalculateAstrology เหมือนเดิม)
+// 🚀 [อัปเดต] CalculateAstrology
 func (h *AnalysisHandler) CalculateAstrology(c *fiber.Ctx) error {
 	var requestBody models.AstrologyRequest
 	if err := c.BodyParser(&requestBody); err != nil {
@@ -25,13 +24,20 @@ func (h *AnalysisHandler) CalculateAstrology(c *fiber.Ctx) error {
 			"error": "Cannot parse JSON",
 		})
 	}
+	// 🚀 [อัปเดต] เพิ่มการตรวจสอบ Day
 	if requestBody.Name == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Name field is required",
 		})
 	}
+	if requestBody.Day == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Day field is required",
+		})
+	}
 
-	result, err := h.Service.CalculateNameAstrology(requestBody.Name)
+	// 🚀 [อัปเดต] ส่ง Day เข้าไปใน Service
+	result, err := h.Service.CalculateNameAstrology(requestBody.Name, requestBody.Day)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to calculate astrology",
@@ -42,9 +48,9 @@ func (h *AnalysisHandler) CalculateAstrology(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
-// (ฟังก์ชัน GetAllSatNums เหมือนเดิม)
-// (แม้ชื่อ Handler จะเปลี่ยน แต่ฟังก์ชันนี้ยังทำงานได้)
+// (GetAllSatNums เหมือนเดิม)
 func (h *AnalysisHandler) GetAllSatNums(c *fiber.Ctx) error {
+	// ... (โค้ดเดิม) ...
 	results, err := h.Service.GetAllSatNums()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

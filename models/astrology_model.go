@@ -6,21 +6,23 @@ type MatchedChar struct {
 	Value     int    `json:"value"`
 }
 
-// 🚀 [เปลี่ยนชื่อ] เปลี่ยน CalculationResult เป็น AstrologySet
-// นี่คือชุดผลลัพธ์สำหรับ 1 ประเภท (เช่น เลขศาสตร์)
+// AstrologySet (เหมือนเดิม)
 type AstrologySet struct {
 	MatchedChars []MatchedChar `json:"matched_chars"`
 	TotalSum     int           `json:"total_sum"`
 }
 
-// 🚀 [ใหม่] นี่คือ Model ผลลัพธ์ใหม่ที่จะส่งกลับไป
-// มันจะห่อหุ้มผลลัพธ์ 2 ชุดไว้ด้วยกัน
+// AnalysisResult (อัปเดต)
 type AnalysisResult struct {
 	SatNum AstrologySet `json:"sat_num"`
 	ShaNum AstrologySet `json:"sha_num"`
+	// 🚀 [ใหม่] เพิ่มช่องสำหรับอักษรกาลกิณีที่พบ
+	KakisFound []string `json:"kakis_found,omitempty"`
 }
 
-// AstrologyRequest (เหมือนเดิม)
+// AstrologyRequest (อัปเดต)
 type AstrologyRequest struct {
 	Name string `json:"name"`
+	// 🚀 [ใหม่] เพิ่มช่องสำหรับรับ "วันเกิด"
+	Day string `json:"day"`
 }

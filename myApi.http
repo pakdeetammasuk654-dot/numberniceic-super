@@ -16,7 +16,8 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "name": "อณัญญา"
+  "name": "อณัญญา",
+  "day": "sunday"
 }
 
 ###

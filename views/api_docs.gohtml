@@ -40,7 +40,7 @@
 
 <div class="container">
     <h2>Available API Routes</h2>
-    <p>นี่คือรายการ API Endpoint ที่พร้อมใช้งานในระบบ</p>
+    <p>นี่คือรายการ API Endpoint ที่พร้อมใช้งานในระบบ (สำหรับ Mobile App)</p>
 
     <div class="route">
         <span class="method method-get">GET</span>
@@ -60,15 +60,22 @@
         <span class="method method-get">GET</span>
         <span class="route-path">/api/v1/satnums</span>
         <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
-        <strong>หน้าที่:</strong> ดึงข้อมูลเลขศาสตร์ (SatNums) ทั้งหมด
+        <strong>หน้าที่:</strong> ดึงข้อมูลเลขศาสตร์ (SatNums) ทั้งหมด (สำหรับตรวจสอบ)
     </div>
 
     <div class="route">
-        <span class="method method-post">POST</span> <span class="route-path">/api/v1/satnums/calculate</span>
+        <span class="method method-post">POST</span>
+        <span class="route-path">/api/v1/satnums/calculate</span>
         <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
-        <strong>หน้าที่:</strong> คำนวณผลรวมเลขศาสตร์จากชื่อ
+        <strong>หน้าที่:</strong> คำนวณผลรวมเลขศาสตร์, พลังเงา และค้นหากาลกิณี
         <br>
-        <strong>Body (JSON):</strong> <code>{ "name": "ชื่อของคุณ" }</code>
+        <strong>Body (JSON):</strong>
+        <pre><code style="background-color: #eee; padding: 5px; border-radius: 3px; display: block; margin-top: 10px;">{
+  "name": "ชื่อของคุณ",
+  "day": "monday"
+}</code></pre>
+        <strong>ค่า Day ที่รองรับ:</strong>
+        <code>sunday</code>, <code>monday</code>, <code>tuesday</code>, <code>wednesday1</code> (พุธกลางวัน), <code>wednesday2</code> (พุธกลางคืน), <code>thursday</code>, <code>friday</code>, <code>saturday</code>
     </div>
 
 </div>
