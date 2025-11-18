@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/template/html/v2" // 👈 [1. เพิ่ม] Import template engine
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/joho/godotenv"
 )
@@ -19,7 +20,16 @@ func main() {
 	}
 	defer db.Close()
 
-	app := fiber.New()
+	// 👈 [2. เพิ่ม] เริ่มต้น Template Engine
+	// บอกให้ Engine มองหาไฟล์ .gohtml ในโฟลเดอร์ ./views
+	engine := html.New("./views", ".gohtml")
+	// (สามารถเพิ่มฟังก์ชัน helpers หรือตั้งค่าอื่นๆ ได้ที่นี่)
+	// engine.Reload(true) // เปิดใช้งาน "Reload" ตอนพัฒนา
+
+	// 👈 [3. แก้ไข] ส่ง Engine ที่สร้างไว้ไปให้ Fiber
+	app := fiber.New(fiber.Config{
+		Views: engine,
+	})
 
 	routes.SetupRoutes(app, db)
 
@@ -31,6 +41,7 @@ func main() {
 
 }
 
+// ... ส่วน InitDB() เหมือนเดิม ไม่ต้องแก้ ...
 func InitDB() (*sql.DB, error) {
 	// 1. โหลดไฟล์ .env
 	err := godotenv.Load() // โหลด .env จาก path ปัจจุบัน

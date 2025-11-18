@@ -1,0 +1,57 @@
+<style>
+    .container {
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    h2 {
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+    }
+    .route {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #fafafa;
+    }
+    .route-path {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1.1em;
+        background-color: #eee;
+        padding: 3px 8px;
+        border-radius: 4px;
+    }
+    .method {
+        font-weight: bold;
+        font-size: 1.1em;
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        min-width: 60px;
+        text-align: center;
+    }
+    .method-get { background-color: #27ae60; }
+</style>
+
+<div class="container">
+    <h2>Available API Routes</h2>
+    <p>นี่คือรายการ API Endpoint ที่พร้อมใช้งานในระบบ</p>
+
+    <div class="route">
+        <span class="method method-get">GET</span>
+        <span class="route-path">/api/v1/numbers</span>
+        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
+        <strong>หน้าที่:</strong> ดึงข้อมูลตัวเลข (Numbers) ทั้งหมดจากฐานข้อมูล
+    </div>
+
+    <div class="route">
+        <span class="method method-get">GET</span>
+        <span class="route-path">/api/v1/numbers/:number</span>
+        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
+        <strong>หน้าที่:</strong> ดึงข้อมูลตัวเลข 1 คู่ ตามที่ระบุ (เช่น /api/v1/numbers/12)
+    </div>
+</div>
